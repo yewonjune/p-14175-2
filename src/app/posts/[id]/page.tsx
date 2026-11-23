@@ -42,9 +42,29 @@ function usePostComments(postId: number) {
       });
   }, [postId]);
 
+  const deleteComment = (
+    commentId: number,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${postId}/comments/${commentId}`, {
+      method: "DELETE",
+    })
+      .then((data) => {
+        if (postComments == null) return;
+
+        setPostComments(postComments.filter((c) => c.id != commentId));
+
+        onSuccess(data);
+      })
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
+  };
+
   return {
     postId,
     postComments,
+    deleteComment,
   };
 }
 
