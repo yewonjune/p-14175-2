@@ -2,10 +2,12 @@
 
 import { apiFetch } from "@/lib/backend/client";
 import type { PostWithContentDto } from "@/type/post";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Page() {
+  const router = useRouter();
+
   const { id: idStr } = useParams<{ id: string }>();
   const id = Number(idStr);
 
@@ -23,6 +25,57 @@ export default function Page() {
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const form = e.currentTarget;
+
+    const titleInput = form.elements.namedItem("title") as HTMLInputElement;
+    const contentTextarea = form.elements.namedItem(
+      "content",
+    ) as HTMLTextAreaElement;
+
+    titleInput.value = titleInput.value.trim();
+
+    if (titleInput.value.length === 0) {
+      alert("제목을 입력해주세요.");
+      titleInput.focus();
+      return;
+    }
+
+    if (titleInput.value.length < 2) {
+      alert("제목을 2자 이상 입력해주세요.");
+      titleInput.focus();
+      return;
+    }
+
+    contentTextarea.value = contentTextarea.value.trim();
+
+    if (contentTextarea.value.length === 0) {
+      alert("내용을 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    if (contentTextarea.value.length < 2) {
+      alert("내용을 2자 이상 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    apiFetch(`/api/v1/posts/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: titleInput.value,
+        content: contentTextarea.value,
+      }),
+    })
+      .then((data) => {
+        alert(data.msg);
+
+        router.replace(`/posts/${id}`);
+      })
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
   };
 
   return (
