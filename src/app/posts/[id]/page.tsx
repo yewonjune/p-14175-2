@@ -1,7 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/lib/backend/client";
-import type { PostWithContentDto } from "@/type/post";
+import type { PostCommentDto, PostWithContentDto } from "@/type/post";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,6 +26,25 @@ function usePost(id: number) {
   return {
     post,
     deletePost,
+  };
+}
+
+function usePostComments(postId: number) {
+  const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    apiFetch(`/api/v1/posts/${postId}/comments`)
+      .then(setPostComments)
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
+  }, [postId]);
+
+  return {
+    postId,
+    postComments,
   };
 }
 
@@ -64,17 +83,57 @@ function PostInfo({ postState }: { postState: ReturnType<typeof usePost> }) {
   );
 }
 
+function PostCommentListItem({ comment }: { comment: PostCommentDto }) {
+  return (
+    <li className="flex gap-2 items-start">
+      <span>{comment.id} :</span>
+      <span style={{ whiteSpace: "pre-line" }}>{comment.content}</span>
+    </li>
+  );
+}
+
+function PostCommentList({
+  postCommentsState,
+}: {
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  const { postId, postComments } = postCommentsState;
+
+  if (postComments == null) return <div>로딩중...</div>;
+
+  return (
+    <>
+      <h2>{postId}번 글에 대한 댓글 목록</h2>
+
+      {postComments.length == 0 && <div>댓글이 없습니다.</div>}
+
+      {postComments.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-2">
+          {postComments.map((comment) => (
+            <PostCommentListItem key={comment.id} comment={comment} />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
 export default function Page() {
   const { id: idStr } = useParams<{ id: string }>();
   const id = Number(idStr);
 
   const postState = usePost(id);
+  const postCommentsState = usePostComments(id);
 
   return (
     <>
       <h1>글 상세페이지</h1>
 
       <PostInfo postState={postState} />
+
+      <hr className="my-2" />
+
+      <PostCommentList postCommentsState={postCommentsState} />
     </>
   );
 }
