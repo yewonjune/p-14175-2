@@ -103,11 +103,33 @@ function PostInfo({ postState }: { postState: ReturnType<typeof usePost> }) {
   );
 }
 
-function PostCommentListItem({ comment }: { comment: PostCommentDto }) {
+function PostCommentListItem({
+  comment,
+  postCommentsState,
+}: {
+  comment: PostCommentDto;
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  const { deleteComment: _deleteComment } = postCommentsState;
+
+  const deleteComment = (commentId: number) => {
+    if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
+
+    _deleteComment(commentId, (data) => {
+      alert(data.msg);
+    });
+  };
+
   return (
     <li className="flex gap-2 items-start">
       <span>{comment.id} :</span>
       <span style={{ whiteSpace: "pre-line" }}>{comment.content}</span>
+      <button
+        className="p-2 rounded border cursor-pointer"
+        onClick={() => deleteComment(comment.id)}
+      >
+        삭제
+      </button>
     </li>
   );
 }
@@ -130,7 +152,11 @@ function PostCommentList({
       {postComments.length > 0 && (
         <ul className="mt-2 flex flex-col gap-2">
           {postComments.map((comment) => (
-            <PostCommentListItem key={comment.id} comment={comment} />
+            <PostCommentListItem
+              key={comment.id}
+              comment={comment}
+              postCommentsState={postCommentsState}
+            />
           ))}
         </ul>
       )}
