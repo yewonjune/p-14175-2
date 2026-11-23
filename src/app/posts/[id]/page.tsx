@@ -2,7 +2,7 @@
 
 import { apiFetch } from "@/lib/backend/client";
 import type { PostWithContentDto } from "@/type/post";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function usePost(id: number) {
@@ -29,15 +29,33 @@ function usePost(id: number) {
 }
 
 function PostInfo({ postState }: { postState: ReturnType<typeof usePost> }) {
-  const { post } = postState;
+  const router = useRouter();
+  const { post, deletePost: _deletePost } = postState;
 
   if (post == null) return <div>로딩중...</div>;
+
+  const deletePost = () => {
+    if (!confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`)) return;
+
+    _deletePost(post.id, () => {
+      router.replace("/posts");
+    });
+  };
 
   return (
     <>
       <div>번호 : {post.id}</div>
       <div>제목: {post.title}</div>
       <div style={{ whiteSpace: "pre-line" }}>{post.content}</div>
+
+      <div className="flex gap-2">
+        <button
+          className="p-2 rounded border cursor-pointer"
+          onClick={deletePost}
+        >
+          삭제
+        </button>
+      </div>
     </>
   );
 }
