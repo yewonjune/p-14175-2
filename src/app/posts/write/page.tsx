@@ -1,6 +1,11 @@
 "use client";
 
+import { apiFetch } from "@/lib/backend/client";
+import { useRouter } from "next/navigation";
+
 export default function Page() {
+  const router = useRouter();
+
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -38,6 +43,22 @@ export default function Page() {
       contentTextarea.focus();
       return;
     }
+
+    apiFetch(`/api/v1/posts`, {
+      method: "POST",
+      body: JSON.stringify({
+        title: titleInput.value,
+        content: contentTextarea.value,
+      }),
+    })
+      .then((data) => {
+        alert(data.msg);
+
+        router.replace(`/posts/${data.data.id}`);
+      })
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
   };
 
   return (
