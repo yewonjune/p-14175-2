@@ -4,3 +4,7 @@ export type PostDto = {
   modifyDate: string;
   title: string;
 };
+
+export type PostWithContentDto = PostDto & {
+  content: string;
+};
