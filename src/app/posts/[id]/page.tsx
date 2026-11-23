@@ -61,10 +61,33 @@ function usePostComments(postId: number) {
       });
   };
 
+  const writeComment = (
+    content: string,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify({
+        content,
+      }),
+    })
+      .then((data) => {
+        if (postComments == null) return;
+
+        setPostComments([...postComments, data.data]);
+
+        onSuccess(data);
+      })
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
+  };
+
   return {
     postId,
     postComments,
     deleteComment,
+    writeComment,
   };
 }
 
