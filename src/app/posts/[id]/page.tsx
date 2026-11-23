@@ -16,8 +16,15 @@ function usePost(id: number) {
       });
   }, [id]);
 
+  const deletePost = (id: number, onSuccess: () => void) => {
+    apiFetch(`/api/v1/posts/${id}`, {
+      method: "DELETE",
+    }).then(onSuccess);
+  };
+
   return {
     post,
+    deletePost,
   };
 }
 
