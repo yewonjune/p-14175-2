@@ -194,7 +194,12 @@ function PostCommentListItem({
   comment: PostCommentDto;
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
+  const [modifyMode, setModifyMode] = useState(false);
   const { deleteComment: _deleteComment } = postCommentsState;
+
+  const toggleModifyMode = () => {
+    setModifyMode(!modifyMode);
+  };
 
   const deleteComment = (commentId: number) => {
     if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
@@ -207,7 +212,33 @@ function PostCommentListItem({
   return (
     <li className="flex gap-2 items-start">
       <span>{comment.id} :</span>
-      <span style={{ whiteSpace: "pre-line" }}>{comment.content}</span>
+      {!modifyMode && (
+        <span style={{ whiteSpace: "pre-line" }}>{comment.content}</span>
+      )}
+      {modifyMode && (
+        <form
+          className="flex gap-2 items-start"
+          onSubmit={(e) => e.preventDefault()}
+        >
+          <textarea
+            className="border p-2 rounded"
+            name="content"
+            placeholder="댓글 내용"
+            maxLength={100}
+            rows={5}
+            defaultValue={comment.content}
+          />
+          <button className="p-2 rounded border cursor-pointer" type="submit">
+            저장
+          </button>
+        </form>
+      )}
+      <button
+        className="p-2 rounded border cursor-pointer"
+        onClick={toggleModifyMode}
+      >
+        {modifyMode ? "수정취소" : "수정"}
+      </button>
       <button
         className="p-2 rounded border cursor-pointer"
         onClick={() => deleteComment(comment.id)}
