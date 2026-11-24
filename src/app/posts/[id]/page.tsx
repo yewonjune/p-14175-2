@@ -94,7 +94,17 @@ function usePostComments(postId: number) {
         content,
       }),
     })
-      .then(onSuccess)
+      .then((data) => {
+        if (postComments == null) return;
+
+        setPostComments(
+          postComments.map((comment) =>
+            comment.id === commentId ? { ...comment, content } : comment,
+          ),
+        );
+
+        onSuccess(data);
+      })
       .catch((error) => {
         alert(`${error.resultCode} : ${error.msg}`);
       });
