@@ -248,6 +248,22 @@ function PostCommentList({
   );
 }
 
+function PostCommentWriteAndList({
+  postCommentsState,
+}: {
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  return (
+    <>
+      <PostCommentWrite postCommentsState={postCommentsState} />
+
+      <hr className="my-2" />
+
+      <PostCommentList postCommentsState={postCommentsState} />
+    </>
+  );
+}
+
 export default function Page() {
   const { id: idStr } = useParams<{ id: string }>();
   const id = Number(idStr);
@@ -263,11 +279,7 @@ export default function Page() {
 
       <hr className="my-2" />
 
-      <PostCommentWrite postCommentsState={postCommentsState} />
-
-      <hr className="my-2" />
-
-      <PostCommentList postCommentsState={postCommentsState} />
+      <PostCommentWriteAndList postCommentsState={postCommentsState} />
     </>
   );
 }
