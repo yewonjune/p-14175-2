@@ -83,11 +83,29 @@ function usePostComments(postId: number) {
       });
   };
 
+  const modifyComment = (
+    commentId: number,
+    content: string,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${postId}/comments/${commentId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        content,
+      }),
+    })
+      .then(onSuccess)
+      .catch((error) => {
+        alert(`${error.resultCode} : ${error.msg}`);
+      });
+  };
+
   return {
     postId,
     postComments,
     deleteComment,
     writeComment,
+    modifyComment,
   };
 }
 
@@ -195,10 +213,41 @@ function PostCommentListItem({
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   const [modifyMode, setModifyMode] = useState(false);
-  const { deleteComment: _deleteComment } = postCommentsState;
+  const { deleteComment: _deleteComment, modifyComment } = postCommentsState;
 
   const toggleModifyMode = () => {
     setModifyMode(!modifyMode);
+  };
+
+  const handleCommentModifyFormSubmit = (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+
+    const contentTextarea = form.elements.namedItem(
+      "content",
+    ) as HTMLTextAreaElement;
+
+    contentTextarea.value = contentTextarea.value.trim();
+
+    if (contentTextarea.value.length === 0) {
+      alert("댓글 내용을 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    if (contentTextarea.value.length < 2) {
+      alert("댓글 내용을 2자 이상 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    modifyComment(comment.id, contentTextarea.value, (data) => {
+      alert(data.msg);
+      toggleModifyMode();
+    });
   };
 
   const deleteComment = (commentId: number) => {
@@ -218,7 +267,7 @@ function PostCommentListItem({
       {modifyMode && (
         <form
           className="flex gap-2 items-start"
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleCommentModifyFormSubmit}
         >
           <textarea
             className="border p-2 rounded"
@@ -227,6 +276,7 @@ function PostCommentListItem({
             maxLength={100}
             rows={5}
             defaultValue={comment.content}
+            autoFocus
           />
           <button className="p-2 rounded border cursor-pointer" type="submit">
             저장
